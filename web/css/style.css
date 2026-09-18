@@ -1,0 +1,125 @@
+/* ---------------------------------------------------------------------------
+   style.css — LOE spawn selector.
+
+   IMPORTANT: FiveM's CEF is older than Chromium 111 and supports neither
+   color-mix() nor a usable backdrop-filter (the latter renders as a solid
+   black rectangle). Everything here is plain rgba() on purpose — do not
+   "modernise" these values.
+--------------------------------------------------------------------------- */
+
+:root {
+    --accent: #4FC3F7;
+    --accent-soft: #81D4FA;
+    --text: #F5F7FA;
+    --text-muted: #9AA4B2;
+    --panel: rgba(0, 0, 0, 0.75);
+    --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: var(--font);
+    color: var(--text);
+}
+
+.hidden { display: none !important; }
+
+#root {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+#root.show { opacity: 1; }
+
+/* ----- Header ----- */
+#header {
+    text-align: center;
+    margin-bottom: 34px;
+}
+#brand {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: var(--accent);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+#title {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+/* ----- Cards ----- */
+#cards {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.card {
+    width: 240px;
+    padding: 32px 20px;
+    border-radius: 16px;
+    background: var(--panel);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    text-align: center;
+    transform: translateY(12px);
+    opacity: 0;
+    transition:
+        border-color 180ms ease,
+        transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 200ms ease,
+        opacity 240ms ease;
+}
+#root.show .card {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.card:hover {
+    border-color: rgba(79, 195, 247, 0.85);
+    transform: translateY(-4px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55),
+                0 0 26px rgba(79, 195, 247, 0.4);
+}
+.card:active { transform: translateY(-1px) scale(0.985); }
+
+.card.chosen {
+    border-color: var(--accent);
+    box-shadow: 0 0 32px rgba(79, 195, 247, 0.6);
+}
+
+.card-icon {
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 14px;
+    color: var(--accent);
+}
+.card-icon svg { width: 100%; height: 100%; }
+
+.card-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
