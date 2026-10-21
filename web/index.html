@@ -4,16 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LOE Spawn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-    <div id="root" class="hidden">
-        <div id="header">
-            <div id="brand">LOE</div>
-            <div id="title">Spawn Location</div>
-        </div>
-        <div id="cards"></div>
-    </div>
+    <div id="veil"></div>
+
+    <main id="stage" aria-label="Spawn selector">
+        <header class="top">
+            <div class="heading">
+                <span class="pill">SPAWN</span>
+                <span class="crumb">CHOOSE WHERE YOUR STORY CONTINUES</span>
+            </div>
+
+            <div class="brand" id="brand">
+                <svg class="crown" viewBox="0 0 36 28" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="#ffe58a"/>
+                            <stop offset=".55" stop-color="#f7b500"/>
+                            <stop offset="1" stop-color="#c27a00"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M3 22V8.5l8.2 6.3L18 3l6.8 11.8L33 8.5V22z" fill="url(#gold)"/>
+                    <rect x="3" y="23.8" width="30" height="3" rx="1.2" fill="url(#gold)"/>
+                    <circle cx="3" cy="7" r="2.4" fill="url(#gold)"/>
+                    <circle cx="18" cy="2.8" r="2.6" fill="url(#gold)"/>
+                    <circle cx="33" cy="7" r="2.4" fill="url(#gold)"/>
+                    <circle cx="11.5" cy="19" r="1.5" fill="#000" opacity=".28"/>
+                    <circle cx="18" cy="19" r="1.5" fill="#000" opacity=".28"/>
+                    <circle cx="24.5" cy="19" r="1.5" fill="#000" opacity=".28"/>
+                </svg>
+                <div class="word" id="brandWord"></div>
+            </div>
+        </header>
+
+        <section class="panels" id="panels"></section>
+
+        <footer class="foot">
+            <p class="desc" id="desc"></p>
+            <div class="keys">
+                <span class="key"><label>Select</label><kbd class="wide">Enter</kbd></span>
+                <span class="key"><label>Move</label><kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd></span>
+            </div>
+        </footer>
+    </main>
 
     <script src="js/app.js"></script>
 </body>

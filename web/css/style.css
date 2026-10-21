@@ -1,125 +1,379 @@
 /* ---------------------------------------------------------------------------
-   style.css — LOE spawn selector.
+   style.css — LOE spawn selector (GTA+ style, perspective cards).
 
-   IMPORTANT: FiveM's CEF is older than Chromium 111 and supports neither
-   color-mix() nor a usable backdrop-filter (the latter renders as a solid
-   black rectangle). Everything here is plain rgba() on purpose — do not
-   "modernise" these values.
+   FiveM's CEF is older than Chromium 111: no color-mix(), and backdrop-filter
+   renders as a solid black rectangle. Only plain rgba()/filter/blend-mode
+   features are used here on purpose.
 --------------------------------------------------------------------------- */
 
-:root {
-    --accent: #4FC3F7;
-    --accent-soft: #81D4FA;
-    --text: #F5F7FA;
-    --text-muted: #9AA4B2;
-    --panel: rgba(0, 0, 0, 0.75);
-    --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+/* Card text font (Pricedown Bl, Typodermic). If the file is missing the cards
+   fall back to Barlow Condensed, nothing breaks. See fonts/README.txt for the licence note. */
+@font-face {
+  font-family: 'Pricedown';
+  src: url('../fonts/pricedown-bl.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-user-select: none;
-    user-select: none;
+:root {
+  --ink: #fff;
+  --muted: rgba(255, 255, 255, .55);
+  --tag: #f7b500;
+  --ease: cubic-bezier(.22, .8, .22, 1);
+  --font: 'Barlow Condensed', 'Bahnschrift Condensed', 'Bahnschrift', 'Arial Narrow', sans-serif;
+  --font-text: 'Barlow', 'Segoe UI', Arial, sans-serif;
+  --font-card: 'Pricedown', 'Barlow Condensed', 'Bahnschrift Condensed', 'Arial Narrow', sans-serif;
 }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: transparent;
-    font-family: var(--font);
-    color: var(--text);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font);
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-.hidden { display: none !important; }
+body.preview { background: #000; }
 
-#root {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 260ms cubic-bezier(0.22, 1, 0.36, 1);
+/* Solid black backdrop: the world behind the cards is fully hidden. */
+#veil {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  background: #000;
+  transition: opacity .6s ease;
 }
-#root.show { opacity: 1; }
+body.open #veil { opacity: 1; }
 
-/* ----- Header ----- */
-#header {
-    text-align: center;
-    margin-bottom: 34px;
+/* Fixed 1920x1080 design canvas, scaled to any screen */
+#stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform: translate(-50%, -50%) scale(var(--s, 1));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .5s ease;
 }
-#brand {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 6px;
-    color: var(--accent);
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+body.open #stage { opacity: 1; pointer-events: auto; }
+body.out #stage { opacity: 0; transition-duration: .45s; }
+
+/* ---------- Header ---------- */
+.top {
+  position: absolute;
+  top: 50px;
+  left: 96px;
+  right: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-#title {
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-top: 8px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+.heading { display: flex; align-items: center; gap: 22px; }
+.pill {
+  background: #fff;
+  color: #000;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  padding: 5px 20px 3px;
+  line-height: 1.15;
+}
+.crumb {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: var(--muted);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .7);
 }
 
-/* ----- Cards ----- */
-#cards {
-    display: flex;
-    gap: 22px;
-    flex-wrap: wrap;
-    justify-content: center;
+/* Server brand: crown + wordmark */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: brandIn .9s var(--ease) both;
+  animation-delay: .1s;
+}
+@keyframes brandIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+.crown {
+  width: 52px;
+  height: 40px;
+  filter: drop-shadow(0 4px 16px rgba(247, 181, 0, .4));
+}
+.word {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 7px;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  text-shadow: 0 3px 20px rgba(0, 0, 0, .6);
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, #f7b500 0%, rgba(247, 181, 0, 0) 100%) 1;
+}
+.word .small {
+  font-size: 26px;
+  letter-spacing: .14em;
+  color: var(--tag);
+}
+
+/* ---------- Cards ----------
+   Each card has two layers:
+   .shape  the art, projected onto a quad with matrix3d (see app.js), so the boxes are in perspective
+   text    tag / name / button, positioned flat (not distorted) at points projected from the quad */
+.panels {
+  position: absolute;
+  inset: 0;
 }
 
 .card {
-    width: 240px;
-    padding: 32px 20px;
-    border-radius: 16px;
-    background: var(--panel);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    cursor: pointer;
-    text-align: center;
-    transform: translateY(12px);
-    opacity: 0;
-    transition:
-        border-color 180ms ease,
-        transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
-        box-shadow 200ms ease,
-        opacity 240ms ease;
+  --accent: 255, 255, 255;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(26px);
+  font-family: var(--font-card); /* only the 6 boxes use the card font */
 }
-#root.show .card {
-    transform: translateY(0);
-    opacity: 1;
+body.open .card {
+  animation: rise .75s var(--ease) both;
+  animation-delay: calc(var(--i) * 80ms + 150ms);
+}
+@keyframes rise { to { opacity: 1; transform: none; } }
+
+.shape {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  overflow: hidden;
+  background: #0b0c10;
+  cursor: pointer;
+  pointer-events: auto;
+  outline: 1px solid transparent; /* keeps edges smooth under matrix3d */
+}
+.card.locked .shape { cursor: not-allowed; }
+
+.art {
+  position: absolute;
+  inset: -3%;
+  background-position: var(--pos, center);
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: saturate(.6) brightness(.5);
+  transform: scale(1.03) translateX(calc(var(--mx, 0) * -9px));
+  transition: filter .55s ease, transform 1.4s var(--ease);
+}
+.card.active .art {
+  filter: saturate(1.05) brightness(.92);
+  transform: scale(1.09) translateX(calc(var(--mx, 0) * -9px));
+}
+.card.locked .art { filter: grayscale(1) brightness(.16); }
+
+/* Vivid accent colour on hover (hue replaced, light kept) */
+.tint {
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--accent));
+  mix-blend-mode: color;
+  opacity: 0;
+  transition: opacity .55s ease;
+}
+.card.active .tint { opacity: .82; }
+
+.glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(var(--accent), .5) 0%, rgba(var(--accent), 0) 55%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity .55s ease;
+}
+.card.active .glow { opacity: 1; }
+
+.shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(0, 0, 0, .86) 0%, rgba(0, 0, 0, .4) 34%, rgba(0, 0, 0, 0) 62%),
+    linear-gradient(180deg, rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, 0) 28%);
 }
 
-.card:hover {
-    border-color: rgba(79, 195, 247, 0.85);
-    transform: translateY(-4px);
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55),
-                0 0 26px rgba(79, 195, 247, 0.4);
-}
-.card:active { transform: translateY(-1px) scale(0.985); }
-
-.card.chosen {
-    border-color: var(--accent);
-    box-shadow: 0 0 32px rgba(79, 195, 247, 0.6);
+/* Depth: the receding (shorter) side of each card is darker */
+.depth {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, var(--dl, 0)) 0%, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, 0) 48%, rgba(0, 0, 0, var(--dr, 0)) 100%);
 }
 
-.card-icon {
-    width: 38px;
-    height: 38px;
-    margin: 0 auto 14px;
-    color: var(--accent);
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .6s var(--ease);
 }
-.card-icon svg { width: 100%; height: 100%; }
+.card.active .bar { transform: scaleX(1); }
 
-.card-label {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
+.flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
 }
+.card.chosen .flash { animation: flash .6s ease-out both; }
+@keyframes flash { 0% { opacity: 0; } 18% { opacity: .85; } 100% { opacity: 0; } }
+body.busy .card:not(.chosen) { filter: brightness(.35); transition: filter .4s ease; }
+
+/* ---------- Flat text layer ---------- */
+.tag {
+  position: absolute;
+  background: var(--tag);
+  color: #111;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1;
+  padding: 6px 10px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.card.locked .tag { background: rgba(255, 255, 255, .13); color: rgba(255, 255, 255, .5); }
+
+.info {
+  position: absolute;
+  transform-origin: 0 100%;
+  transform: scale(var(--ts, 1));
+  transition: transform .55s var(--ease);
+}
+.card.active .info { transform: translateY(-6px) scale(var(--ts, 1)); }
+
+.namerow { display: flex; align-items: center; gap: 12px; }
+.ico {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  fill: #fff;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, .55));
+}
+.tall .ico { width: 46px; height: 46px; }
+
+.name {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, .6);
+}
+.tall .name { font-size: 58px; }
+
+.sub {
+  margin-top: 8px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .65);
+}
+.l1 { font-size: 26px; font-weight: 500; line-height: 1.05; }
+.l2 { font-size: 18px; font-weight: 700; letter-spacing: .03em; opacity: .85; }
+.tall .l1 { font-size: 32px; }
+.tall .l2 { font-size: 20px; }
+
+.enter {
+  position: absolute;
+  width: 128px;
+  height: 44px;
+  border: 1.5px solid rgba(255, 255, 255, .78);
+  border-radius: 22px;
+  background: rgba(0, 0, 0, .3);
+  color: #fff;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  transition: background .3s ease, color .3s ease;
+}
+.card.active .enter { background: #fff; color: #08090c; }
+
+.lockbig {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  fill: rgba(255, 255, 255, .24);
+  transform: translate(-50%, -50%);
+}
+.tall .lockbig { width: 84px; height: 84px; }
+
+/* Locked */
+.card.locked .name { color: rgba(255, 255, 255, .3); text-shadow: none; }
+.card.locked .l1 { font-size: 24px; font-weight: 500; color: rgba(255, 255, 255, .34); text-shadow: none; }
+.card.tall.locked .l1 { font-size: 26px; }
+.card.locked.active .tint,
+.card.locked.active .glow { opacity: 0; }
+.card.locked.active .bar { background: rgba(255, 255, 255, .3); }
+.card.locked .shade { background: linear-gradient(0deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 60%); }
+
+body.open .card.shake { animation: shake .42s ease both; }
+@keyframes shake {
+  0%, 100% { opacity: 1; transform: translateX(0); }
+  20% { opacity: 1; transform: translateX(-9px); }
+  40% { opacity: 1; transform: translateX(8px); }
+  60% { opacity: 1; transform: translateX(-5px); }
+  80% { opacity: 1; transform: translateX(3px); }
+}
+
+/* ---------- Footer ---------- */
+.foot {
+  position: absolute;
+  left: 96px;
+  right: 96px;
+  bottom: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.desc {
+  font-family: var(--font-text);
+  font-size: 27px;
+  font-weight: 500;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .7);
+  transition: opacity .25s ease;
+}
+.desc.swap { opacity: 0; }
+.keys { display: flex; gap: 34px; align-items: center; }
+.key { display: flex; align-items: center; gap: 8px; }
+.key label { font-size: 26px; font-weight: 500; color: #fff; margin-right: 4px; letter-spacing: .02em; text-shadow: 0 2px 10px rgba(0, 0, 0, .7); }
+kbd {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 9px;
+  background: #fff;
+  color: #000;
+  border-radius: 5px;
+  font-family: var(--font-text);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 36px;
+  text-align: center;
+}
+kbd.wide { padding: 0 14px; }

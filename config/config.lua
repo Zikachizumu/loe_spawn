@@ -11,7 +11,7 @@ LoeSpawn.Config = {
 
     -- Heading shown above the cards. Keep it short.
     title = 'Spawn Location',
-    brand = 'LOE',
+    brand = 'Legends of Empire',
 
     ---------------------------------------------------------------------------
     -- SPAWN POINTS
@@ -56,6 +56,20 @@ LoeSpawn.Config = {
         -- we park the hidden ped at the shot and move the streaming focus
         -- there. Raise this if the scenery still looks flat on slow disks.
         streamWait = 1500,      -- ms
+    },
+
+    ---------------------------------------------------------------------------
+    -- SKY DROP
+    -- After a spawn is chosen the camera flies down from the sky onto the
+    -- player. Set enabled = false to cut straight to the player instead.
+    -- Not used for property spawns (the player ends up inside an interior).
+    ---------------------------------------------------------------------------
+    skyDrop = {
+        enabled = true,
+        height = 450.0,         -- metres above the spawn point
+        fov = 60.0,
+        duration = 3500,        -- ms, sky -> behind the player
+        landing = 800,          -- ms, hand-over to the gameplay camera
     },
 
     ---------------------------------------------------------------------------

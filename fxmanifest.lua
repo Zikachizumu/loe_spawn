@@ -43,4 +43,6 @@ files {
     'web/index.html',
     'web/css/style.css',
     'web/js/app.js',
+    'web/img/*.webp',
+    'web/fonts/*.otf',
 }
