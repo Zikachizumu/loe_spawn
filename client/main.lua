@@ -116,6 +116,40 @@ local function stopCamera()
 end
 
 ---------------------------------------------------------------------------
+-- ARAC KAMERASI HATIRLAMA
+--
+-- NetworkStartSoloTutorialSession/NetworkEndTutorialSession (karakter secim
+-- ekraninin izolasyonu icin qbx_core tarafindan kullaniliyor) oyuncunun V ile
+-- sectigi arac kamera modunu motor varsayilanina sifirliyor. Radar/HUD icin
+-- ayni sifirlama zaten asagida elle geri yukleniyor (DisplayRadar/setHudVisible);
+-- arac kamerasi icin de aynisini yapip son secilen modu KVP'de tutuyoruz.
+---------------------------------------------------------------------------
+
+local VEHCAM_KVP = 'loe_spawn:vehcam'
+local vehCamMonitorStarted = false
+
+local function restoreVehCamMode()
+    local saved = GetResourceKvpString(VEHCAM_KVP)
+    if saved then SetFollowVehicleCamViewMode(tonumber(saved)) end
+end
+
+local function startVehCamMonitor()
+    if vehCamMonitorStarted then return end
+    vehCamMonitorStarted = true
+    CreateThread(function()
+        local lastMode = GetFollowVehicleCamViewMode()
+        while true do
+            Wait(2000)
+            local mode = GetFollowVehicleCamViewMode()
+            if mode ~= lastMode then
+                lastMode = mode
+                SetResourceKvp(VEHCAM_KVP, tostring(mode))
+            end
+        end
+    end)
+end
+
+---------------------------------------------------------------------------
 -- HUD
 ---------------------------------------------------------------------------
 
@@ -176,6 +210,8 @@ local function doSpawn(index)
     FreezeEntityPosition(cache.ped, false)
     DisplayRadar(true)
     setHudVisible(true)
+    restoreVehCamMode()
+    startVehCamMonitor()
 
     if spawnData.propertyId then
         TriggerServerEvent('qbx_properties:server:enterProperty',
@@ -214,7 +250,11 @@ end)
 -- ENTRY POINT
 ---------------------------------------------------------------------------
 
-RegisterNetEvent('qb-spawn:client:setupSpawns', function()
+-- loe_ui passes (citizenid, hotelOnly). hotelOnly is true for a brand-new
+-- character and for one whose saved position is still the character
+-- creator interior: its "last location" would drop the player inside the
+-- creator building, so only the configured spawns are offered.
+RegisterNetEvent('qb-spawn:client:setupSpawns', function(_, hotelOnly)
     spawns = {}
 
     -- 1. Configured spawn points, in config order.
@@ -228,7 +268,7 @@ RegisterNetEvent('qb-spawn:client:setupSpawns', function()
     end
 
     -- 2. The player's last location, via qbx_spawn's existing server callback.
-    if Cfg.lastLocation.enabled then
+    if Cfg.lastLocation.enabled and hotelOnly ~= true then
         local lastCoords, lastPropertyId = lib.callback.await('qbx_spawn:server:getLastLocation')
         if lastCoords then
             spawns[#spawns + 1] = {
